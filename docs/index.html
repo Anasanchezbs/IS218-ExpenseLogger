@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expense Logger — Research Notes (IS218)</title>
+<style>
+  :root { --ink:#1f2933; --muted:#5f6b7a; --line:#d9dee5; --accent:#1d6f5f; --soft:#f3f6f8; --warn:#8a5a00; }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:#fff; }
+  header { background:var(--soft); border-bottom:1px solid var(--line); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+  header .wrap { padding-top: 32px; padding-bottom: 24px; }
+  h1 { margin:0 0 6px; font-size: 1.9rem; }
+  h2 { margin-top: 2.4rem; padding-top: 1rem; border-top:1px solid var(--line); font-size:1.35rem; }
+  h3 { font-size:1.05rem; margin-bottom:.3rem; }
+  .sub { color:var(--muted); margin:0; }
+  nav { margin-top:14px; font-size:.92rem; }
+  nav a { margin-right:14px; color:var(--accent); }
+  a { color: var(--accent); }
+  table { width:100%; border-collapse: collapse; margin: 12px 0; font-size:.95rem; }
+  th, td { text-align:left; vertical-align:top; padding: 8px 10px; border-bottom:1px solid var(--line); }
+  th { background: var(--soft); }
+  .tag { display:inline-block; font-size:.75rem; font-weight:600; padding:1px 8px; border-radius:10px; border:1px solid currentColor; white-space:nowrap; }
+  .planned { color:#5f6b7a; } .attempted { color: var(--warn); } .observed { color: var(--accent); }
+  .fact { color:#1d4f91; } .interp { color:#6a3d9a; } .assume { color: var(--warn); }
+  .box { background:var(--soft); border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin:14px 0; }
+  pre { background:#111827; color:#e5e7eb; padding:14px; border-radius:8px; overflow-x:auto; font-size:.88rem; }
+  .arch { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:16px 0; }
+  .node { border:2px solid var(--accent); border-radius:8px; padding:10px 12px; background:#fff; min-width:150px; font-size:.9rem; }
+  .node b { display:block; }
+  .arrow { font-size:1.4rem; color:var(--muted); }
+  footer { margin: 48px 0 32px; color: var(--muted); font-size:.9rem; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Expense Logger — Research Notes</h1>
+    <p class="sub">IS218 Creative Project · Review 1 (Plan) · Ana Sanchez · Last updated November 12, 2026</p>
+    <nav>
+      <a href="#question">Question</a>
+      <a href="#concepts">Concepts</a>
+      <a href="#sources">Sources</a>
+      <a href="#money">Money decision</a>
+      <a href="#privacy">Privacy decision</a>
+      <a href="#plan">Plan</a>
+      <a href="#checks">Checks</a>
+      <a href="#ai">AI use</a>
+      <a href="#feedback">Peer feedback</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<div class="box">
+  <strong>What this site is:</strong> my working research notes for the project, not a finished app or a formal report.
+  Every check below is labeled
+  <span class="tag planned">planned</span> (not done yet),
+  <span class="tag attempted">attempted</span> (tried, result unclear) or
+  <span class="tag observed">observed</span> (done, with a result).<br>
+  Code repository: <a href="https://github.com/Anasanchezbs/IS218-ExpenseLogger">github.com/Anasanchezbs/IS218-ExpenseLogger</a> ·
+  My career research site (Portfolio Plan): link will be added when that site is published
+</div>
+
+<h2 id="question">1. Research question and audience</h2>
+<p><strong>Question:</strong> How should a small expense logger for college students store money amounts correctly and make sure each student only sees their own expenses?</p>
+<p><strong>Audience:</strong> my IS218 classmates and instructor, and me later in the semester when I build the app. I write for someone who knows basic web ideas but isn't an expert programmer.</p>
+<p><strong>Why these two questions:</strong> the whole app depends on them. If money math is wrong, the dashboard totals are wrong. If privacy is wrong, one student could see another student's spending.</p>
+
+<h2 id="concepts">2. Two project concepts I compared</h2>
+<table>
+  <tr><th></th><th>A. Expense logger (chosen)</th><th>B. Study-session tracker</th></tr>
+  <tr><td>Audience</td><td>College students on a tight budget</td><td>College students preparing for exams</td></tr>
+  <tr><td>Useful interaction</td><td>Log an expense: amount, category, date, note</td><td>Log a study session: course, minutes, topic</td></tr>
+  <tr><td>Saved record</td><td>One expense row</td><td>One session row</td></tr>
+  <tr><td>Dashboard</td><td>This month's spending, totals by category</td><td>Hours per course this week</td></tr>
+  <tr><td>Interesting technical problem</td><td>Exact money math; private financial data</td><td>Time zones and durations</td></tr>
+  <tr><td>Fit with my major (Business &amp; Information Systems)</td><td>Strong: personal finance, reporting</td><td>Medium</td></tr>
+</table>
+<p><span class="tag interp">Interpretation</span> I chose the expense logger because money data gives me clearer, more meaningful tests (totals must be exact; private data must stay private), and the dashboard is a real business-style report.</p>
+
+<h2 id="sources">3. Sources (checked November 12, 2026)</h2>
+<table>
+  <tr><th>Source</th><th>What it says that matters here</th><th>Used for</th></tr>
+  <tr>
+    <td><a href="https://docs.python.org/3/tutorial/floatingpoint.html">Python docs — Floating-Point Arithmetic: Issues and Limitations</a></td>
+    <td>Most decimal fractions can't be stored exactly as binary floats; this is normal behavior, not a bug. For exact decimal work it points to the <code>decimal</code> module.</td>
+    <td>Money decision</td>
+  </tr>
+  <tr>
+    <td><a href="https://docs.python.org/3/library/decimal.html">Python docs — decimal module</a></td>
+    <td>Decimal numbers can be represented exactly; in decimal, 0.1 + 0.1 + 0.1 − 0.3 is exactly zero.</td>
+    <td>Money decision</td>
+  </tr>
+  <tr>
+    <td><a href="https://www.postgresql.org/docs/current/datatype-numeric.html">PostgreSQL docs — Numeric Types</a></td>
+    <td><code>numeric</code> is especially recommended for monetary amounts where exactness is required; <code>real</code>/<code>double precision</code> are inexact. Trade-off: numeric is slower.</td>
+    <td>Money decision</td>
+  </tr>
+  <tr>
+    <td><a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html">OWASP Password Storage Cheat Sheet</a></td>
+    <td>Store passwords with a slow password-hashing algorithm (Argon2id preferred), never plain text or reversible encryption.</td>
+    <td>Account security</td>
+  </tr>
+  <tr>
+    <td><a href="https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/">FastAPI docs — OAuth2 with Password (and hashing), Bearer with JWT tokens</a></td>
+    <td>Official tutorial for login with hashed passwords and signed tokens in FastAPI; uses the <code>pwdlib</code> library for hashing.</td>
+    <td>Account security, stack</td>
+  </tr>
+  <tr>
+    <td><a href="https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/index.html">OWASP Top 10 (2025) — A01 Broken Access Control</a></td>
+    <td>Broken access control (users reaching data they shouldn't) is still the #1 web app risk.</td>
+    <td>Privacy decision</td>
+  </tr>
+  <tr>
+    <td><a href="https://docs.github.com/en/pages/quickstart">GitHub Docs — Quickstart for GitHub Pages</a></td>
+    <td>How to publish a free static site from a repository.</td>
+    <td>Hosting this site</td>
+  </tr>
+</table>
+<p class="sub">Date checked means the date the link was opened and read. Sources were first located with AI help (see <a href="#ai">AI use</a>); I re-open each one myself before relying on it.</p>
+
+<h2 id="money">4. Decision: how to store money</h2>
+<h3>Approaches compared</h3>
+<table>
+  <tr><th>Approach</th><th>Pros</th><th>Cons</th></tr>
+  <tr><td>Float (Python <code>float</code>, Postgres <code>double precision</code>)</td><td>Simple, fast</td><td>Inexact: 0.10 + 0.20 ≠ 0.30. Totals can drift.</td></tr>
+  <tr><td>Integer cents (store $4.99 as 499)</td><td>Exact and fast</td><td>Easy to forget to convert; every display needs ÷100</td></tr>
+  <tr><td><strong>Decimal + NUMERIC(10,2) (chosen)</strong></td><td>Exact; reads like real money ("4.99")</td><td>Slower — doesn't matter at student-app scale</td></tr>
+</table>
+<p><span class="tag fact">Fact</span> Python and PostgreSQL docs both say binary floats are inexact and recommend exact decimal types for money.</p>
+<p><span class="tag interp">Interpretation</span> For a small app, readability matters more than speed, so Decimal/NUMERIC beats integer cents for me.</p>
+<p><span class="tag assume">Assumption</span> One currency (US dollars) only. Amounts under $100,000,000 (NUMERIC(10,2) allows up to 99,999,999.99).</p>
+
+<h3>Check I ran</h3>
+<p><span class="tag observed">observed</span> November 12, 2026, Python 3.13:</p>
+<pre>float   0.10 + 0.20         = 0.30000000000000004
+float   0.10 + 0.20 == 0.30 → False
+Decimal 0.10 + 0.20         = 0.30
+Decimal equal to 0.30       → True</pre>
+<p>Surprise: adding ten 0.10 floats with <code>sum()</code> printed exactly 1.0. Newer Python versions make <code>sum()</code> more accurate, so the float problem doesn't show up in every case. The simple <code>+</code> case still fails, so the decision stands.</p>
+
+<h2 id="privacy">5. Decision: keeping each student's expenses private</h2>
+<table>
+  <tr><th>Approach</th><th>Risk</th></tr>
+  <tr><td>Browser sends <code>user_id</code> and the server trusts it</td><td>Anyone can change the number and read someone else's expenses</td></tr>
+  <tr><td><strong>Server gets the user from the login token and filters every query by it (chosen)</strong></td><td>Low — the user can't pick whose data they get</td></tr>
+</table>
+<p><span class="tag fact">Fact</span> OWASP ranks broken access control as the #1 web application risk.</p>
+<p><span class="tag interp">Interpretation</span> Every expense query must include "belongs to the logged-in user," and asking for someone else's expense should return "not found" (404), so the app doesn't even confirm the expense exists.</p>
+<p><span class="tag assume">Assumption</span> No admin role or shared budgets in this version, which keeps the rules simple.</p>
+<p><strong>Passwords:</strong> hashed with Argon2 via <code>pwdlib</code>, following the FastAPI tutorial and OWASP guidance. Plain passwords are never stored.</p>
+
+<h2 id="plan">6. Project plan</h2>
+<h3>Finished flow</h3>
+<p><strong>Account</strong> (sign up / log in) → <strong>useful interaction</strong> (log an expense) → <strong>saved record</strong> (expense stored in database) → <strong>private dashboard</strong> (my month, totals by category, history list) → <strong>account-update promise</strong> (change email/password, delete account and all my expenses).</p>
+
+<h3>Stack</h3>
+<p>Python 3 · FastAPI · PostgreSQL · SQLAlchemy · Pydantic · pytest · simple HTML templates · Docker Compose and GitHub Actions if the course setup uses them. <span class="tag assume">Assumption</span> This matches the class's expected stack; I'll confirm it against the project instructions.</p>
+
+<h3>Five user stories</h3>
+<ol>
+  <li>As a new student, I want to create an account with my email and a password so my spending stays private.</li>
+  <li>As a student, I want to log an expense (amount, category, date, note) in under 30 seconds so I actually keep doing it.</li>
+  <li>As a student, I want my expenses saved so they're still there next time I log in.</li>
+  <li>As a student, I want a dashboard with this month's total and totals by category so I can see where my money goes.</li>
+  <li>As a student, I want to change my email or password, or delete my account and all my data, so I stay in control.</li>
+</ol>
+
+<h3>Architecture sketch</h3>
+<div class="arch">
+  <div class="node"><b>Browser</b>HTML forms &amp; dashboard</div><span class="arrow">→</span>
+  <div class="node"><b>FastAPI routes</b>/auth · /expenses · /dashboard · /account</div><span class="arrow">→</span>
+  <div class="node"><b>Services</b>login check, totals, category suggester</div><span class="arrow">→</span>
+  <div class="node"><b>PostgreSQL</b>users · expenses</div>
+</div>
+<pre>users:    id, email (unique), password_hash, created_at
+expenses: id, user_id → users.id (delete with user), amount NUMERIC(10,2) &gt; 0,
+          category, spent_on (date), note, created_at</pre>
+
+<h3>Uncertain creative experiment (pattern experiment)</h3>
+<p><strong>Idea:</strong> suggest a category automatically from the note ("chipotle" → Food, "NJ Transit" → Transportation).</p>
+<p><strong>Pattern:</strong> Strategy pattern. A <code>CategorySuggester</code> interface with two swappable versions: (1) <em>KeywordSuggester</em> using a fixed word list, and (2) <em>HistorySuggester</em> that reuses the category this student picked last time for a similar note.</p>
+<p><strong>Why it's uncertain:</strong> I don't know whether simple rules are accurate enough to help or just annoying.</p>
+<p><strong>How I'll judge it:</strong> on 20 sample expenses, does either version guess right at least 15 times? If not, the feature stays optional or gets cut. <span class="tag planned">planned</span></p>
+
+<h2 id="checks">7. Checks</h2>
+<table>
+  <tr><th>Check</th><th>Status</th></tr>
+  <tr><td>Float vs Decimal money math (section 4)</td><td><span class="tag observed">observed</span></td></tr>
+  <tr><td>All source links open and say what this page claims</td><td><span class="tag attempted">attempted</span> — located with AI-assisted search; I'm re-reading each one</td></tr>
+  <tr><td>Test: student A asks for student B's expense → 404</td><td><span class="tag planned">planned</span></td></tr>
+  <tr><td>Test: password saved as a hash, never plain text</td><td><span class="tag planned">planned</span></td></tr>
+  <tr><td>Test: $0.10 + $0.20 expenses → dashboard shows exactly $0.30</td><td><span class="tag planned">planned</span></td></tr>
+  <tr><td>Test: negative or $0 amount is rejected</td><td><span class="tag planned">planned</span></td></tr>
+  <tr><td>Test: deleting an account also deletes its expenses</td><td><span class="tag planned">planned</span></td></tr>
+  <tr><td>Category suggester accuracy on 20 samples</td><td><span class="tag planned">planned</span></td></tr>
+</table>
+
+<h2 id="ai">8. AI assistance</h2>
+<p>I used Claude (Anthropic) on November 12, 2026 to help draft this site and the project plan: the concept comparison, user stories, architecture sketch and page layout. It also searched for sources and ran the float/Decimal check in section 4.</p>
+<p><strong>How I'm verifying its claims:</strong></p>
+<ul>
+  <li>Each source claim in section 3 must match what the linked page actually says. I'm re-opening each link (status: <span class="tag attempted">attempted</span>).</li>
+  <li>I'll re-run the float/Decimal check on my own computer. <span class="tag planned">planned</span></li>
+  <li>The stack assumption must be confirmed against the course's project instructions. <span class="tag planned">planned</span></li>
+  <li>AI critique doesn't replace peer review. Real classmate feedback is logged in section 9.</li>
+</ul>
+
+<h2 id="feedback">9. Peer feedback</h2>
+<p>Peer review: <span class="tag planned">planned</span>. A classmate will open a source, explain one of my choices back to me, and point out an assumption or confusing part. Each piece of feedback is a GitHub issue:</p>
+<table>
+  <tr><th>Issue</th><th>Feedback</th><th>Decision &amp; why</th><th>Status</th></tr>
+  <tr><td><a href="#">#1</a></td><td><em>(fill in after review)</em></td><td><em>implement / investigate / defer / decline — reason</em></td><td><em>open / closed</em></td></tr>
+  <tr><td><a href="#">#2</a></td><td><em>(fill in after review)</em></td><td></td><td></td></tr>
+</table>
+
+</main>
+<footer class="wrap">
+  Ana Sanchez · NJIT IS218 · Sources checked November 12, 2026 ·
+  <a href="https://github.com/Anasanchezbs/IS218-ExpenseLogger">Repository</a>
+</footer>
+</body>
+</html>
